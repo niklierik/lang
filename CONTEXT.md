@@ -52,6 +52,19 @@ _Avoid_: Type annotation, data type, kind
 The text an expression type is emitted as in C.
 _Avoid_: Native name, mapped type, C type
 
+**Result-typed evaluation**:
+The rule that an arithmetic node computes at the width of its own type rather than at the width C's
+integer promotions would pick. It is what the cast wrapped around every emitted arithmetic expression
+buys, and it is why `I8` arithmetic wraps at eight bits instead of at thirty-two.
+_Avoid_: Promotion, widening, coercion
+
+**Unsigned detour**:
+Emitting signed `+`, `-`, `*` and unary `-` through the corresponding unsigned type, where C defines
+wraparound, so that signed overflow is defined rather than undefined behaviour. Division and
+remainder do not take it, because `MIN / -1` through unsigned changes the answer rather than
+wrapping it.
+_Avoid_: Unsigned trick, wraparound cast, overflow workaround
+
 **Printable type**:
 An expression type that a value can be printed as, which is every type except the poison type.
 _Avoid_: Displayable, formattable, showable

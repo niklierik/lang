@@ -97,17 +97,21 @@ floats, and leaving one of a pair open is the inconsistent outcome.
 
 ## Emitted C
 
+A cast wraps an operand only where one is being applied, so the detour is visible and nothing else
+gains parentheses it does not need.
+
 | Source | Emitted |
 | --- | --- |
 | `I32(32)` | `(int32_t)32` |
 | `U32(32)` | `(uint32_t)32u` |
 | `U64(18446744073709551615)` | `(uint64_t)18446744073709551615u` |
 | `F32(1.5)` | `(float32_t)1.5` |
-| `a + b`, signed | `(int32_t)((uint32_t)(a)+(uint32_t)(b))` |
-| `-a`, signed | `(int32_t)(-(uint32_t)(a))` |
-| `a / b`, signed | `(int32_t)((a)/(b))` |
-| `a + b`, unsigned | `(uint32_t)((a)+(b))` |
-| `a + b`, float | `(float32_t)((a)+(b))` |
+| `I32(1) + I32(2)` | `(int32_t)((uint32_t)((int32_t)1)+(uint32_t)((int32_t)2))` |
+| `-I32(5)` | `(int32_t)(-(uint32_t)((int32_t)5))` |
+| `I32(6) / I32(2)` | `(int32_t)((int32_t)6/(int32_t)2)` |
+| `U32(1) + U32(2)` | `(uint32_t)((uint32_t)1u+(uint32_t)2u)` |
+| `F64(1.5) + F64(2.5)` | `(float64_t)((float64_t)1.5+(float64_t)2.5)` |
+| `I32(1) < I32(2)` | `((int32_t)1<(int32_t)2)` |
 
 Relational, equality and logical operators are untouched: they yield `Boolean` and perform no
 arithmetic whose width could be wrong.
