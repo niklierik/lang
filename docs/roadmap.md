@@ -32,6 +32,6 @@ Everything else in these documents is unbuilt.
   rule** — it cannot be written in a program yet.
 - There is no `entry`, no `namespace` and no `Project.json` handling. The compiler takes a single
   `.re` file path on the command line and compiles that.
-- Integer literals are emitted with C suffixes wider than their own type — an `I32` literal becomes
-  `-32l` — so arithmetic that should overflow at 32 bits is evaluated at 64 and truncated on
-  assignment. `print` sidesteps this by casting its operand, but the arithmetic is still wrong.
+- Division by zero and `MIN / -1` are undefined. Diagnosing them needs a way to fail at runtime, and
+  there is no `if`, no panic and no `Result` yet. See
+  [docs/work/integer-arithmetic/spec.md](work/integer-arithmetic/spec.md).

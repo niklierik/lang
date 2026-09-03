@@ -12,6 +12,14 @@ enum class SignedIntType(
     I16(2, "int16_t", "\"%d\""),
     I8(3, "int8_t", "\"%d\"");
 
+    val unsigned: UnsignedIntType
+        get() = when (this) {
+            I64 -> UnsignedIntType.U64
+            I32 -> UnsignedIntType.U32
+            I16 -> UnsignedIntType.U16
+            I8 -> UnsignedIntType.U8
+        }
+
     override val declarationParserContext: ParserRuleContext? = null
 
     override fun canAssignTo(target: ExpressionType): Boolean {

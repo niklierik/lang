@@ -89,7 +89,63 @@ class CTranspilerTests {
                 Arguments.of(
                     "an expression statement discards its value",
                     "1 + 2;",
-                    "((int32_t)1+(int32_t)2);"
+                    "(int32_t)((uint32_t)((int32_t)1)+(uint32_t)((int32_t)2));"
+                ),
+                Arguments.of(
+                    "signed addition wraps by detouring through the unsigned counterpart",
+                    "I32(1) + I32(2);",
+                    "(int32_t)((uint32_t)((int32_t)1)+(uint32_t)((int32_t)2));"
+                ),
+                Arguments.of(
+                    "signed multiplication takes the same detour",
+                    "I8(3) * I8(4);",
+                    "(int8_t)((uint8_t)((int8_t)3)*(uint8_t)((int8_t)4));"
+                ),
+                Arguments.of(
+                    "signed division does not detour, because MIN / -1 would change answer not width",
+                    "I32(6) / I32(2);",
+                    "(int32_t)((int32_t)6/(int32_t)2);"
+                ),
+                Arguments.of(
+                    "signed remainder does not detour either",
+                    "I32(7) % I32(2);",
+                    "(int32_t)((int32_t)7%(int32_t)2);"
+                ),
+                Arguments.of(
+                    "unsigned arithmetic needs no detour, only the result cast",
+                    "U32(1) + U32(2);",
+                    "(uint32_t)((uint32_t)1u+(uint32_t)2u);"
+                ),
+                Arguments.of(
+                    "float arithmetic takes the result cast and no detour",
+                    "F64(1.5) + F64(2.5);",
+                    "(float64_t)((float64_t)1.5+(float64_t)2.5);"
+                ),
+                Arguments.of(
+                    "unary minus on a signed type detours",
+                    "-I32(5);",
+                    "(int32_t)(-(uint32_t)((int32_t)5));"
+                ),
+                Arguments.of(
+                    "unary plus takes the result cast without a detour",
+                    "+I32(5);",
+                    "(int32_t)(+(int32_t)5);"
+                ),
+                Arguments.of(
+                    "a comparison yields a boolean and is left alone",
+                    "I32(1) < I32(2);",
+                    "((int32_t)1<(int32_t)2);"
+                ),
+                Arguments.of(
+                    "negating a boolean is left alone",
+                    "!true;",
+                    "(!true);"
+                ),
+                Arguments.of(
+                    "nested arithmetic composes the casts",
+                    "(I32(1) + I32(2)) * I32(3);",
+                    "(int32_t)((uint32_t)((int32_t)((uint32_t)((int32_t)1)+(uint32_t)((int32_t)2)))" +
+                            "*(uint32_t)((int32_t)3));"
                 )
             )
         }
