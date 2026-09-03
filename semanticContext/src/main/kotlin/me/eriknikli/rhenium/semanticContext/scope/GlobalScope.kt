@@ -6,10 +6,9 @@ import me.eriknikli.rhenium.semanticContext.scope.types.UnsignedIntType
 
 private fun Scope.insertPrimitives() {
     insertSymbol("I64", SignedIntType.I64)
-    insertSymbol("I32", SignedIntType.I64)
-    insertSymbol("U64", SignedIntType.I64)
-    insertSymbol("I16", SignedIntType.I64)
-    insertSymbol("I8", SignedIntType.I64)
+    insertSymbol("I32", SignedIntType.I32)
+    insertSymbol("I16", SignedIntType.I16)
+    insertSymbol("I8", SignedIntType.I8)
 
     insertSymbol("U64", UnsignedIntType.U64)
     insertSymbol("U32", UnsignedIntType.U32)
