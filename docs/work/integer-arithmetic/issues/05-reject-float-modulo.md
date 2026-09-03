@@ -1,6 +1,6 @@
 # Reject `%` on floats
 
-Status: ready-for-agent
+Status: resolved
 
 `arithmeticType` handles `PERCENT` exactly like `STAR`, so `F64(1.0) % F64(2.0)` type-checks and
 emits `(1.0%2.0)`. C has no `%` for floating point, so clang rejects it: `invalid operands to binary

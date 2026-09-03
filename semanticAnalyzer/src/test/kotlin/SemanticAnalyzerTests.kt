@@ -107,6 +107,16 @@ class SemanticAnalyzerTests {
                     "1:9: illegal binary operation 'F64 % F64'."
                 ),
                 Arguments.of(
+                    "the narrower float has no remainder operator either",
+                    "let a = F32(1.0) % F32(2.0);",
+                    "1:9: illegal binary operation 'F32 % F32'."
+                ),
+                Arguments.of(
+                    "one float operand is enough to rule out a remainder",
+                    "let a = I32(1) % F64(2.0);",
+                    "1:9: illegal binary operation 'I32 % F64'."
+                ),
+                Arguments.of(
                     "integer remainder still resolves",
                     "let a: I32 = I32(7) % I32(2);",
                     ""

@@ -1,6 +1,6 @@
 # Compute arithmetic at the result type's width
 
-Status: ready-for-agent
+Status: resolved
 Blocked by: 02
 
 Rhenium resolves `I32 + I32` to `I32`, then emits `(a+b)` and lets C pick the width. [The

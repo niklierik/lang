@@ -1,6 +1,6 @@
 # Emit numeric literals as a cast, not a suffix
 
-Status: ready-for-agent
+Status: resolved
 Blocked by: 01
 
 `CLiteralExpressionTranspiler` emits a fixed per-kind suffix. Two rows are wrong: `I32` emits `l` and

@@ -35,7 +35,7 @@ constructor() : IBinaryOpTranspiler {
             return
         }
 
-        val detour = if (type is SignedIntType && node.operator in WRAPPING_OPERATORS) type.unsigned else null
+        val detour = if (type is SignedIntType && node.operator in DETOURED_OPERATORS) type.unsigned else null
 
         output.writeText("(${type.cName})(")
         transpileOperand(node.left, detour, output)
@@ -56,4 +56,4 @@ constructor() : IBinaryOpTranspiler {
     }
 }
 
-private val WRAPPING_OPERATORS = setOf(Operator.PLUS, Operator.MINUS, Operator.STAR)
+private val DETOURED_OPERATORS = setOf(Operator.PLUS, Operator.MINUS, Operator.STAR)

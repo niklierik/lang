@@ -1,6 +1,6 @@
 # Bind each primitive type name to its own type
 
-Status: ready-for-agent
+Status: resolved
 
 `GlobalScope.insertPrimitives()` binds `I32`, `I16` and `I8` to `SignedIntType.I64`, so a declared
 `let a: I32 = 0;` produces an `int64_t`. `U64` is inserted twice — once to `SignedIntType.I64`, then

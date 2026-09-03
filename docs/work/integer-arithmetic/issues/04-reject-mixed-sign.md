@@ -1,6 +1,6 @@
 # Reject mixed-sign arithmetic
 
-Status: ready-for-agent
+Status: resolved
 
 `arithmeticType` falls through its same-family checks into `if (left is SignedIntType) return left`,
 so `I32(1) + U32(1)` resolves to `I32` with no diagnostic. C's own rule here — unsigned wins,

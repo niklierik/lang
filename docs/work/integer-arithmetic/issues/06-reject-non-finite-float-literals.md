@@ -1,6 +1,6 @@
 # Reject float literals that overflow to infinity
 
-Status: ready-for-agent
+Status: resolved
 
 `parsedAs` in `LiteralVisitor` turns a `NumberFormatException` into `InvalidValueOfLiteral`, which is
 why integer overflow is caught: `Integer.parseInt` throws. Float parsing does not — `Float.parseFloat`

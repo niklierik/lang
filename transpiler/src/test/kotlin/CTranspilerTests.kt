@@ -97,6 +97,11 @@ class CTranspilerTests {
                     "(int32_t)((uint32_t)((int32_t)1)+(uint32_t)((int32_t)2));"
                 ),
                 Arguments.of(
+                    "signed subtraction takes the same detour",
+                    "I32(1) - I32(2);",
+                    "(int32_t)((uint32_t)((int32_t)1)-(uint32_t)((int32_t)2));"
+                ),
+                Arguments.of(
                     "signed multiplication takes the same detour",
                     "I8(3) * I8(4);",
                     "(int8_t)((uint8_t)((int8_t)3)*(uint8_t)((int8_t)4));"

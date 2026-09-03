@@ -128,12 +128,6 @@ constructor() : IBinaryOpNodeDecorator {
         if (right is FloatType) {
             return right
         }
-        if (left is SignedIntType) {
-            return left
-        }
-        if (right is SignedIntType) {
-            return right
-        }
 
         return null
     }
