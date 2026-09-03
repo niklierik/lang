@@ -87,6 +87,31 @@ class SemanticAnalyzerTests {
                     """.trimIndent()
                 ),
                 Arguments.of(
+                    "signed and unsigned operands cannot be mixed",
+                    "let a = I32(1) + U32(1);",
+                    "1:9: cannot mix signed and unsigned operands in 'I32 + U32'."
+                ),
+                Arguments.of(
+                    "the operand order does not change the diagnostic",
+                    "let a = U32(1) + I32(1);",
+                    "1:9: cannot mix signed and unsigned operands in 'U32 + I32'."
+                ),
+                Arguments.of(
+                    "mixing an integer with a float still resolves",
+                    "let a: F64 = I32(1) + F64(1.0);",
+                    ""
+                ),
+                Arguments.of(
+                    "a float has no remainder operator",
+                    "let a = F64(1.0) % F64(2.0);",
+                    "1:9: illegal binary operation 'F64 % F64'."
+                ),
+                Arguments.of(
+                    "integer remainder still resolves",
+                    "let a: I32 = I32(7) % I32(2);",
+                    ""
+                ),
+                Arguments.of(
                     "every statement is analysed, and diagnostics come out in source order",
                     "const a = 1;\na = 2;\nb = 3;\nlet c: F32 = 1;\nlet a = 9;",
                     """

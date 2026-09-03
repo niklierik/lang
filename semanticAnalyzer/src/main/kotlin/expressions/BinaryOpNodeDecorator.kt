@@ -10,6 +10,7 @@ import me.eriknikli.rhenium.ast.tree.expressions.operators.Operator
 import me.eriknikli.rhenium.common.diagnostics.Diagnosed
 import me.eriknikli.rhenium.semanticAnalyzer.diagnostics.BinaryOperatorTypeMismatch
 import me.eriknikli.rhenium.semanticAnalyzer.diagnostics.IllegalBinaryOperation
+import me.eriknikli.rhenium.semanticAnalyzer.diagnostics.MixedSignedness
 import me.eriknikli.rhenium.semanticContext.scope.types.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -84,6 +85,14 @@ constructor() : IBinaryOpNodeDecorator {
             }
 
             Operator.STAR, Operator.SLASH, Operator.PERCENT, Operator.PLUS, Operator.MINUS -> {
+                if (operator == Operator.PERCENT && (left is FloatType || right is FloatType)) {
+                    return IllegalBinaryOperation(expression.parserContext, left, right, operator).leftNel()
+                }
+
+                if (isMixedSignedness(left, right)) {
+                    return MixedSignedness(expression.parserContext, left, right, operator).leftNel()
+                }
+
                 arithmeticType(left, right)?.right()
                     ?: IllegalBinaryOperation(expression.parserContext, left, right, operator).leftNel()
             }
@@ -98,6 +107,10 @@ constructor() : IBinaryOpNodeDecorator {
             else -> IllegalBinaryOperation(expression.parserContext, left, right, operator).leftNel()
         }
     }
+
+    private fun isMixedSignedness(left: ExpressionType, right: ExpressionType): Boolean =
+        (left is SignedIntType && right is UnsignedIntType) ||
+                (left is UnsignedIntType && right is SignedIntType)
 
     private fun arithmeticType(left: ExpressionType, right: ExpressionType): ExpressionType? {
         if (left is SignedIntType && right is SignedIntType) {
