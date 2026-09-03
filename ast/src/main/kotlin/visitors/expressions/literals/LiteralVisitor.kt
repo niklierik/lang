@@ -111,8 +111,17 @@ constructor() : RheniumParserBaseVisitor<Diagnosed<Literal<*>>>(), ILiteralVisit
         parse: (String) -> T
     ): Diagnosed<T> =
         try {
-            parse(this).right()
+            val value = parse(this)
+
+            if (value.isNonFiniteFloat()) {
+                InvalidValueOfLiteral(ctx, this, type).leftNel()
+            } else {
+                value.right()
+            }
         } catch (_: NumberFormatException) {
             InvalidValueOfLiteral(ctx, this, type).leftNel()
         }
+
+    private fun Any?.isNonFiniteFloat(): Boolean =
+        (this is Float && !isFinite()) || (this is Double && !isFinite())
 }
