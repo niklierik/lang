@@ -34,19 +34,48 @@ class CTranspilerTests {
         @JvmStatic
         fun provideData(): Stream<Arguments> {
             return Stream.of(
-                Arguments.of("print omits the line break", "print 1;", """printf("%" PRId32,(int32_t)(1l));"""),
-                Arguments.of("println appends a line break", "println 1;", """printf("%" PRId32 "\n",(int32_t)(1l));"""),
+                Arguments.of(
+                    "print omits the line break",
+                    "print 1;",
+                    """printf("%" PRId32,(int32_t)((int32_t)1));"""
+                ),
+                Arguments.of(
+                    "println appends a line break",
+                    "println 1;",
+                    """printf("%" PRId32 "\n",(int32_t)((int32_t)1));"""
+                ),
                 Arguments.of("bare println writes only a line break", "println;", """printf("\n");"""),
-                Arguments.of("i8", "println I8(-8);", """printf("%d" "\n",(int8_t)(-8));"""),
-                Arguments.of("i16", "println I16(-16);", """printf("%d" "\n",(int16_t)(-16));"""),
-                Arguments.of("i32", "println I32(-32);", """printf("%" PRId32 "\n",(int32_t)(-32l));"""),
-                Arguments.of("i64", "println I64(-64);", """printf("%" PRId64 "\n",(int64_t)(-64ll));"""),
-                Arguments.of("u8", "println U8(8);", """printf("%u" "\n",(uint8_t)(8));"""),
-                Arguments.of("u16", "println U16(16);", """printf("%u" "\n",(uint16_t)(16));"""),
-                Arguments.of("u32", "println U32(32);", """printf("%" PRIu32 "\n",(uint32_t)(32lu));"""),
-                Arguments.of("u64", "println U64(64);", """printf("%" PRIu64 "\n",(uint64_t)(64llu));"""),
-                Arguments.of("f32", "println F32(1.5);", """printf("%f" "\n",(float32_t)(1.5f));"""),
-                Arguments.of("f64", "println F64(2.5);", """printf("%f" "\n",(float64_t)(2.5));"""),
+                Arguments.of("i8", "println I8(-8);", """printf("%d" "\n",(int8_t)((int8_t)-8));"""),
+                Arguments.of("i16", "println I16(-16);", """printf("%d" "\n",(int16_t)((int16_t)-16));"""),
+                Arguments.of(
+                    "i32",
+                    "println I32(-32);",
+                    """printf("%" PRId32 "\n",(int32_t)((int32_t)-32));"""
+                ),
+                Arguments.of(
+                    "i64",
+                    "println I64(-64);",
+                    """printf("%" PRId64 "\n",(int64_t)((int64_t)-64));"""
+                ),
+                Arguments.of("u8", "println U8(8);", """printf("%u" "\n",(uint8_t)((uint8_t)8u));"""),
+                Arguments.of("u16", "println U16(16);", """printf("%u" "\n",(uint16_t)((uint16_t)16u));"""),
+                Arguments.of(
+                    "u32",
+                    "println U32(32);",
+                    """printf("%" PRIu32 "\n",(uint32_t)((uint32_t)32u));"""
+                ),
+                Arguments.of(
+                    "u64",
+                    "println U64(64);",
+                    """printf("%" PRIu64 "\n",(uint64_t)((uint64_t)64u));"""
+                ),
+                Arguments.of(
+                    "a u64 at its maximum keeps the u suffix that stops c reading it as signed",
+                    "println U64(18446744073709551615);",
+                    """printf("%" PRIu64 "\n",(uint64_t)((uint64_t)18446744073709551615u));"""
+                ),
+                Arguments.of("f32", "println F32(1.5);", """printf("%f" "\n",(float32_t)((float32_t)1.5));"""),
+                Arguments.of("f64", "println F64(2.5);", """printf("%f" "\n",(float64_t)((float64_t)2.5));"""),
                 Arguments.of(
                     "a boolean renders as its source spelling, not as an int",
                     "println true;",
@@ -55,9 +84,13 @@ class CTranspilerTests {
                 Arguments.of(
                     "printing a variable casts it to its declared type",
                     "let a = I64(42);\nprintln a;",
-                    """int64_t $A=42ll;printf("%" PRId64 "\n",(int64_t)($A));"""
+                    """int64_t $A=(int64_t)42;printf("%" PRId64 "\n",(int64_t)($A));"""
                 ),
-                Arguments.of("an expression statement discards its value", "1 + 2;", "(1l+2l);")
+                Arguments.of(
+                    "an expression statement discards its value",
+                    "1 + 2;",
+                    "((int32_t)1+(int32_t)2);"
+                )
             )
         }
 
