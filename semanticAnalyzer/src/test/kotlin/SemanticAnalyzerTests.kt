@@ -112,6 +112,16 @@ class SemanticAnalyzerTests {
                     ""
                 ),
                 Arguments.of(
+                    "a boolean can be named as a declared type, not only inferred",
+                    "let a: Boolean = I32(1) < I32(2);",
+                    ""
+                ),
+                Arguments.of(
+                    "a boolean declaration still rejects a number",
+                    "let a: Boolean = 1;",
+                    "1:1: type mismatch, found I32 but expected Boolean."
+                ),
+                Arguments.of(
                     "mixing an integer with a float still resolves",
                     "let a: F64 = I32(1) + F64(1.0);",
                     ""

@@ -82,6 +82,11 @@ class CTranspilerTests {
                     """printf("%s" "\n",(true)?"true":"false");"""
                 ),
                 Arguments.of(
+                    "a declared boolean emits the boolean typedef",
+                    "let a: Boolean = true;",
+                    """boolean_t $A=true;"""
+                ),
+                Arguments.of(
                     "printing a variable casts it to its declared type",
                     "let a = I64(42);\nprintln a;",
                     """int64_t $A=(int64_t)42;printf("%" PRId64 "\n",(int64_t)($A));"""

@@ -1,4 +1,5 @@
 import me.eriknikli.rhenium.semanticContext.scope.globalScope
+import me.eriknikli.rhenium.semanticContext.scope.types.BooleanType
 import me.eriknikli.rhenium.semanticContext.scope.types.FloatType
 import me.eriknikli.rhenium.semanticContext.scope.types.SignedIntType
 import me.eriknikli.rhenium.semanticContext.scope.types.UnsignedIntType
@@ -28,7 +29,8 @@ class GlobalScopeTests {
             Arguments.of("U32", UnsignedIntType.U32),
             Arguments.of("U64", UnsignedIntType.U64),
             Arguments.of("F32", FloatType.F32),
-            Arguments.of("F64", FloatType.F64)
+            Arguments.of("F64", FloatType.F64),
+            Arguments.of("Boolean", BooleanType)
         )
     }
 }

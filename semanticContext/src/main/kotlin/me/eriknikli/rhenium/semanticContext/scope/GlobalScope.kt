@@ -1,5 +1,6 @@
 package me.eriknikli.rhenium.semanticContext.scope
 
+import me.eriknikli.rhenium.semanticContext.scope.types.BooleanType
 import me.eriknikli.rhenium.semanticContext.scope.types.FloatType
 import me.eriknikli.rhenium.semanticContext.scope.types.SignedIntType
 import me.eriknikli.rhenium.semanticContext.scope.types.UnsignedIntType
@@ -17,6 +18,8 @@ private fun Scope.insertPrimitives() {
 
     insertSymbol("F64", FloatType.F64)
     insertSymbol("F32", FloatType.F32)
+
+    insertSymbol("Boolean", BooleanType)
 }
 
 fun globalScope(): Scope {
