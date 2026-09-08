@@ -28,8 +28,15 @@ constructor() : ILiteralExpressionTranspiler {
 
     private fun Literal<*>.asNumericConstant(): String {
         val type = context.type
-        val suffix = if (type is UnsignedIntType) "u" else ""
 
-        return "(${type.cName})$value$suffix"
+        if (type is UnsignedIntType) {
+            return "(${type.cName})${value}u"
+        }
+
+        if (value == Long.MIN_VALUE) {
+            return "(${type.cName})(${Long.MIN_VALUE + 1}-1)"
+        }
+
+        return "(${type.cName})$value"
     }
 }

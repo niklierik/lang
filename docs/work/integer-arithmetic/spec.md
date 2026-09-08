@@ -42,9 +42,17 @@ optimizer acts on — is gone.
 `-fwrapv` on the `clang` line would buy the same guarantee for one flag, and was rejected: it makes
 the guarantee a property of how the compiler is invoked rather than of the C that is emitted.
 
-The detour applies at every signed width, including `I8` and `I16` where C's promotion to `int`
-already makes overflow unreachable. The redundant casts fold away in clang, and the rule stays one
-sentence instead of a width-conditional special case.
+The detour type is **not** the same-width unsigned counterpart. `uint8_t` and `uint16_t` promote to
+signed `int` under C's integer promotions, because `int` can represent all their values — so a
+detour through them is a no-op that buys no wraparound at all. It is merely harmless for `+` and `-`
+at those widths, and for `I8 *`, because an int-width result cannot overflow there. `I16 *` does
+overflow it: `(uint16_t)-1 * (uint16_t)-1` is `65535 * 65535` evaluated in `int`, which is the very
+undefined behaviour the detour exists to remove.
+
+So the detour goes through an unsigned type whose *promoted* type is still unsigned — rank at least
+that of `int`. `I64` detours through `U64`; `I32`, `I16` and `I8` all detour through `U32`. The
+result cast back to the node's own `cName` truncates to the declared width, so `I8` and `I16` still
+wrap where the language says they do.
 
 The detour applies to `+`, `-`, `*` and unary `-`. It does **not** apply to `/` and `%`: signed
 division overflows only at `MIN / -1`, and routing that through unsigned produces a different
@@ -62,13 +70,22 @@ assumption about whether `int32_t` is `int` on the host. The `u` is not redundan
 int → long → long long and never reaches unsigned. `u` moves the constant into the unsigned ladder.
 It is applied to every unsigned type rather than to `U64` alone, so the rule needs no width table.
 
-### Mixed-sign arithmetic is rejected
+The signed mirror of that case is the most negative `I64`. C has no negative constants — the minus
+is an operator applied to `9223372036854775808`, which does not fit `long long`, so it warns for the
+same reason. It is emitted as `(int64_t)(-9223372036854775807-1)`, which is the idiom C's own
+`INT64_MIN` uses. No narrower type reaches it: `2147483648` still fits a wider signed type on every
+target.
+
+### Mixed-sign operands are rejected
 
 `arithmeticType` currently falls through its same-family checks into `if (left is SignedIntType)
 return left`, so `I32 + U32` resolves to `I32` silently. There is no reading of that which is not a
 trap; C's own answer — unsigned wins, quietly — is the canonical example of the footgun.
 
-Mixed-sign arithmetic now raises a diagnostic. The escape hatch is an explicit cast, and `AS` is a
+Mixed-sign operands now raise a diagnostic, for comparisons as well as arithmetic. `I32(-1) <
+U32(1)` is `false` in C, because the signed operand converts to unsigned before the comparison —
+the same footgun, in the place where a wrong answer is hardest to notice, since nothing overflows
+and no width looks wrong. The escape hatch is an explicit cast, and `AS` is a
 lexer token with no parser rule, so no cast syntax exists yet: until it does, mixed-sign arithmetic
 is unwritable rather than silently wrong. Mixed int/float arithmetic stays implicit and resolves to
 the float type, which is what the wider type means.
@@ -106,15 +123,19 @@ gains parentheses it does not need.
 | `U32(32)` | `(uint32_t)32u` |
 | `U64(18446744073709551615)` | `(uint64_t)18446744073709551615u` |
 | `F32(1.5)` | `(float32_t)1.5` |
+| `I64(-9223372036854775808)` | `(int64_t)(-9223372036854775807-1)` |
 | `I32(1) + I32(2)` | `(int32_t)((uint32_t)((int32_t)1)+(uint32_t)((int32_t)2))` |
+| `I16(-1) * I16(-1)` | `(int16_t)((uint32_t)((int16_t)-1)*(uint32_t)((int16_t)-1))` |
+| `I64(3) * I64(4)` | `(int64_t)((uint64_t)((int64_t)3)*(uint64_t)((int64_t)4))` |
 | `-I32(5)` | `(int32_t)(-(uint32_t)((int32_t)5))` |
 | `I32(6) / I32(2)` | `(int32_t)((int32_t)6/(int32_t)2)` |
 | `U32(1) + U32(2)` | `(uint32_t)((uint32_t)1u+(uint32_t)2u)` |
 | `F64(1.5) + F64(2.5)` | `(float64_t)((float64_t)1.5+(float64_t)2.5)` |
 | `I32(1) < I32(2)` | `((int32_t)1<(int32_t)2)` |
 
-Relational, equality and logical operators are untouched: they yield `Boolean` and perform no
-arithmetic whose width could be wrong.
+Relational, equality and logical operators emit as they always did: they yield `Boolean` and perform
+no arithmetic whose width could be wrong. Their operands must still agree in signedness, which is an
+analysis rule rather than an emission one.
 
 The detour needs a signed-to-unsigned counterpart for each width, which lands as a property on
 `SignedIntType` in `semanticContext` beside `cName` and `cFormat`.

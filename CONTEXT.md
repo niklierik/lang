@@ -59,10 +59,11 @@ buys, and it is why `I8` arithmetic wraps at eight bits instead of at thirty-two
 _Avoid_: Promotion, widening, coercion
 
 **Unsigned detour**:
-Emitting signed `+`, `-`, `*` and unary `-` through the corresponding unsigned type, where C defines
-wraparound, so that signed overflow is defined rather than undefined behaviour. Division and
-remainder do not take it, because `MIN / -1` through unsigned changes the answer rather than
-wrapping it.
+Emitting signed `+`, `-`, `*` and unary `-` through an unsigned type, where C defines wraparound, so
+that signed overflow is defined rather than undefined behaviour. The type detoured through is never
+narrower than `uint32_t`, because C promotes anything narrower back to signed `int` and the detour
+would buy nothing. Division and remainder do not take it, because `MIN / -1` through unsigned changes
+the answer rather than wrapping it.
 _Avoid_: Unsigned trick, wraparound cast, overflow workaround
 
 **Printable type**:

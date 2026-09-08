@@ -32,7 +32,7 @@ class CUnaryOpTranspiler
             return
         }
 
-        val detour = if (type is SignedIntType && node.operator == Operator.MINUS) type.unsigned else null
+        val detour = if (type is SignedIntType && node.operator == Operator.MINUS) type.detourType else null
 
         output.writeText("(${type.cName})(")
         output.writeText(node.operator.cString)

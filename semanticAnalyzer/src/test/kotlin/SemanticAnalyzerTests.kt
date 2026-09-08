@@ -97,6 +97,21 @@ class SemanticAnalyzerTests {
                     "1:9: cannot mix signed and unsigned operands in 'U32 + I32'."
                 ),
                 Arguments.of(
+                    "a relational operator cannot mix signedness either",
+                    "let a = I32(-1) < U32(1);",
+                    "1:9: cannot mix signed and unsigned operands in 'I32 < U32'."
+                ),
+                Arguments.of(
+                    "nor can an equality operator",
+                    "let a = I32(-1) == U32(1);",
+                    "1:9: cannot mix signed and unsigned operands in 'I32 == U32'."
+                ),
+                Arguments.of(
+                    "comparing two operands of one signedness still resolves",
+                    "I32(1) < I32(2);",
+                    ""
+                ),
+                Arguments.of(
                     "mixing an integer with a float still resolves",
                     "let a: F64 = I32(1) + F64(1.0);",
                     ""

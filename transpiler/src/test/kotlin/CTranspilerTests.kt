@@ -104,7 +104,22 @@ class CTranspilerTests {
                 Arguments.of(
                     "signed multiplication takes the same detour",
                     "I8(3) * I8(4);",
-                    "(int8_t)((uint8_t)((int8_t)3)*(uint8_t)((int8_t)4));"
+                    "(int8_t)((uint32_t)((int8_t)3)*(uint32_t)((int8_t)4));"
+                ),
+                Arguments.of(
+                    "a narrow detour widens to uint32_t, which c will not promote back to signed",
+                    "I16(-1) * I16(-1);",
+                    "(int16_t)((uint32_t)((int16_t)-1)*(uint32_t)((int16_t)-1));"
+                ),
+                Arguments.of(
+                    "the widest signed type detours through the widest unsigned one",
+                    "I64(3) * I64(4);",
+                    "(int64_t)((uint64_t)((int64_t)3)*(uint64_t)((int64_t)4));"
+                ),
+                Arguments.of(
+                    "the most negative i64 is emitted so that c never sees an out-of-range constant",
+                    "I64(-9223372036854775808);",
+                    "(int64_t)(-9223372036854775807-1);"
                 ),
                 Arguments.of(
                     "signed division does not detour, because MIN / -1 would change answer not width",

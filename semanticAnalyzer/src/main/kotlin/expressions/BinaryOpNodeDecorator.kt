@@ -71,6 +71,10 @@ constructor() : IBinaryOpNodeDecorator {
             return IllegalBinaryOperation(expression.parserContext, left, right, operator).leftNel()
         }
 
+        if (isMixedSignedness(left, right)) {
+            return MixedSignedness(expression.parserContext, left, right, operator).leftNel()
+        }
+
         return when (operator) {
             Operator.HAT -> {
                 if (left !is FloatType && right !is FloatType) {
@@ -87,10 +91,6 @@ constructor() : IBinaryOpNodeDecorator {
             Operator.STAR, Operator.SLASH, Operator.PERCENT, Operator.PLUS, Operator.MINUS -> {
                 if (operator == Operator.PERCENT && (left is FloatType || right is FloatType)) {
                     return IllegalBinaryOperation(expression.parserContext, left, right, operator).leftNel()
-                }
-
-                if (isMixedSignedness(left, right)) {
-                    return MixedSignedness(expression.parserContext, left, right, operator).leftNel()
                 }
 
                 arithmeticType(left, right)?.right()

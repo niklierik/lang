@@ -54,9 +54,11 @@ undefined.
 `%` is integer-only; applying it to a float is a diagnostic. Division by zero and `-2147483648 / -1`
 are undefined.
 
-The operands of an arithmetic operator must agree in signedness — `I32 + U32` is a diagnostic rather
-than a silent conversion — and the explicit cast that would let a program opt into one does not
-exist yet. Mixing an integer with a float is allowed and yields the float type.
+The operands of a binary operator must agree in signedness — `I32 + U32` and `I32 < U32` are both
+diagnostics rather than silent conversions — and the explicit cast that would let a program opt into
+one does not exist yet. Comparison is included because C converts the signed operand to unsigned
+there, which makes `-1 < 1` come out false. Mixing an integer with a float is allowed and yields the
+float type.
 
 A literal's width follows the type it is written as, so `I32(-32)` is an `I32`. A bare integer
 literal is an `I32` and a bare decimal literal an `F64`. A literal whose value does not fit its type
