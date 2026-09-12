@@ -84,6 +84,12 @@ Highest to lowest, left-associative within a row, following C#:
 
 Parentheses override precedence as usual.
 
+`&&` and `||` **short-circuit**: `y` is evaluated only when `x` did not already settle the result.
+Guarding an expression with a condition that makes it safe to evaluate is therefore something the
+language promises, not something a particular compiler happens to do. This is why expressions are
+kept nested rather than flattened during lowering — see
+[ADR 0002](adr/0002-expressions-stay-nested-in-the-action-tree.md).
+
 ## Assignment
 
 Assignment is **not** an expression. It may appear once and yields no value, so `a = b = c` is

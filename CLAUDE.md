@@ -27,18 +27,24 @@ AST nodes are data classes carrying their `ParserRuleContext`, which compares by
 ## Module graph
 
 ```
-app  →  common, parser, ast, semanticAnalyzer, semanticContext, transpiler
+app  →  common, parser, ast, semanticAnalyzer, semanticContext, lowering, transpiler
 ast  →  common, parser, semanticContext
 semanticAnalyzer  →  ast, common, semanticContext
-transpiler  →  ast, semanticContext
+lowering  →  ast, semanticContext
+transpiler  →  lowering, semanticContext
 semanticContext  →  (nothing)
 ```
+
+`transpiler` deliberately does **not** depend on `ast`. It reads actions, never nodes, and the missing
+edge is what makes reading a node from the printer a compile error rather than a convention. If you
+find yourself wanting it back, the lowering is incomplete.
 
 - **parser** — Java-only, `antlr` plugin. Split lexer/parser grammars in [parser/src/main/antlr/](parser/src/main/antlr/); generator flags, output directory and package are set in [parser/build.gradle.kts](parser/build.gradle.kts) (visitors only, no listeners). Generated sources live under the build directory — never edit or commit them.
 - **ast** — visitors turn the ANTLR parse tree into the AST in [ast/src/main/kotlin/tree/](ast/src/main/kotlin/tree/).
 - **semanticContext** — the mutable analysis state (`Context`, `Scope`, `Symbol`, `ExpressionType`) that AST nodes carry. It is its own module precisely so `ast` can hold analysis results without depending on `semanticAnalyzer`.
 - **semanticAnalyzer** — "decorators" that walk the AST and fill in each node's `context`.
-- **transpiler** — C emitters that read the decorated AST and write to an `OutputStream`.
+- **lowering** — walks the decorated AST and builds the **action tree**: nested data classes in [lowering/src/main/kotlin/actions/](lowering/src/main/kotlin/actions/), one per construct of the C program about to be written. Actions carry plain data and never reference the AST, so an action exists for C code with no Rhenium source behind it. See [ADR 0001](docs/adr/0001-lower-the-ast-to-an-action-tree.md).
+- **transpiler** — the printer. One exhaustive `when` over the sealed action set, writing C to an `OutputStream`. It performs lookups (an `ExpressionType` to its `cName`) but makes **no decisions**; every decision about the emitted C is made while lowering, which is the only one of the two with tests on it.
 
 ## Pipeline
 
@@ -46,12 +52,13 @@ semanticContext  →  (nothing)
 
 1. `CharStreams.fromFileName` → `IAstBuilder.parse` → `ParseTreeFactory` (lexer/parser) → `RootVisitor` → `RootNode`.
 2. `ISemanticAnalyzer.decorateSemanticContext(ast)` — mutates the AST in place: sets `relevantScope`, resolves types, registers symbols.
-3. `ITranspiler.transpile(ast, outputStream)` — emits a C prologue (the includes and typedefs the `cName`s rely on) then `int main(){ ... }`.
-4. Shells out to `clang`, then executes the produced binary, both via `String.runCommand()` in **common**.
+3. `ILowerer.lower(ast)` — builds the action tree. Cannot fail: everything the user can get wrong was already reported, so it returns a `FunctionAction` rather than a `Diagnosed`, and an unhandled node kind is an `IllegalStateException` like any other compiler bug.
+4. `ITranspiler.transpile(actions, outputStream)` — emits a C prologue (the includes and typedefs the `cName`s rely on) then concatenates the tree.
+5. Shells out to `clang`, then executes the produced binary, both via `String.runCommand()` in **common**.
 
-Steps 1 and 2 each return `Diagnosed<T>`, and the chain is an `either { }` block, so step 3 is only reached for a program with no diagnostics — nothing is written next to the source until then. `Main` prints them and exits non-zero.
+Steps 1 and 2 each return `Diagnosed<T>`, and the chain is an `either { }` block, so steps 3 and 4 are only reached for a program with no diagnostics — nothing is written next to the source until then. `Main` prints them and exits non-zero.
 
-Each stage is a parallel tree of small classes, one per node kind: `visitors/` (ast) ↔ `tree/` (ast) ↔ decorators (semanticAnalyzer) ↔ `tree/` transpilers (transpiler). Adding syntax means touching all four, in that order, plus a `@Binds` in the relevant Dagger module.
+Each stage is a parallel tree of small classes, one per node kind: `visitors/` (ast) ↔ `tree/` (ast) ↔ decorators (semanticAnalyzer) ↔ lowerers (lowering). Adding syntax means touching all four, in that order, plus a `@Binds` in the relevant Dagger module. The printer is the exception and does not get a class per kind: it is one `when` over a sealed set, so a new action is a compile error until it is printed — which is the enforcement the per-kind `@Binds` cannot give you.
 
 ## Conventions
 

@@ -24,6 +24,7 @@
             <option value="$PROJECT_DIR$/ast" />
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/common" />
+            <option value="$PROJECT_DIR$/lowering" />
             <option value="$PROJECT_DIR$/parser" />
             <option value="$PROJECT_DIR$/semanticAnalyzer" />
             <option value="$PROJECT_DIR$/semanticContext" />

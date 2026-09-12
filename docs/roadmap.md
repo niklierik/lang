@@ -15,7 +15,7 @@ From `plan.md` on the `plans` branch. MSc thesis project, defense planned for sp
 
 ## What the compiler implements today
 
-Literals, unary and binary arithmetic, relational, equality and logical operators, grouping,
+Literals, unary and binary arithmetic, relational and equality operators, grouping,
 `let` / `const` declarations with an optional declared type, assignment, expression statements, the
 type rules over those, and a transpiler that emits every statement into a single C `main()`.
 
@@ -30,6 +30,13 @@ Everything else in these documents is unbuilt.
 
 - `^` (Pow) exists as a lexer token and has type rules in `BinaryOpNodeDecorator`, but **no parser
   rule** — it cannot be written in a program yet.
+- `&&` and `||` are the mirror image: lexer tokens, parser rules and AST nodes all exist, but
+  `BinaryOpNodeDecorator` has **no case** for them, so every use is rejected as an illegal binary
+  operation whatever the operand types. The short-circuit guarantee they are promised in
+  [the language reference](language-reference.md) is therefore not yet observable. Lowering is
+  already shaped for it — see
+  [ADR 0002](adr/0002-expressions-stay-nested-in-the-action-tree.md) — so what is missing is the
+  type rule, not the emission.
 - There is no `entry`, no `namespace` and no `Project.json` handling. The compiler takes a single
   `.re` file path on the command line and compiles that.
 - Division by zero and `MIN / -1` are undefined. Diagnosing them needs a way to fail at runtime, and

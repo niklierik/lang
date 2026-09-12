@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":parser"))
     implementation(project(":ast"))
     implementation(project(":semanticAnalyzer"))
+    implementation(project(":lowering"))
     implementation(project(":semanticContext"))
     implementation(project(":transpiler"))
     implementation("io.github.joelromanpr:commandline-ktx:1.0.0")

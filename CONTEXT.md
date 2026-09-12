@@ -18,8 +18,41 @@ A walker that decorates one kind of AST node.
 _Avoid_: Visitor, analyzer, checker — `visitor` is reserved for the parse-tree walk that builds the
 AST, and the two are different trees
 
+**Lower**:
+To walk the decorated AST and build the action tree from it. Lowering never fails — everything the
+user can get wrong was already reported by then — so it returns actions rather than a `Diagnosed`.
+_Avoid_: Compile, emit, generate, translate, desugar
+
+**Lowerer**:
+A walker that lowers one kind of AST node. One per node kind, as the decorators are.
+_Avoid_: Visitor, emitter, builder
+
+**Action**:
+One construct of the C program that is about to be written. An action carries plain data and holds no
+reference to the AST, so an action exists for C code that has no Rhenium source behind it — the cast
+that implements result-typed evaluation, and eventually the destruction of a resource. Where an
+action needs a type it carries an expression type, because that already knows its own C name.
+_Avoid_: Instruction, statement, emission, node, operation — `instruction` implies a flat
+three-address form, which this deliberately is not
+
+**Action tree**:
+Every action for a program, nested. AST nodes represent Rhenium source; actions represent the
+upcoming C code, and everything emitted comes from an action. Expressions nest rather than flatten,
+which is what makes `&&` and `||` short-circuit — see
+[ADR 0002](./docs/adr/0002-expressions-stay-nested-in-the-action-tree.md).
+_Avoid_: IR, action list, action map, intermediate representation, bytecode
+
+**Block**:
+The action that owns an ordered, mutable list of child actions. Its mutability is the point of the
+whole stage: it is what lets the compiler append a statement to a scope it is still building, and
+withdraw one it had already planned.
+_Avoid_: Scope, body, sequence, compound statement — `scope` is the semantic-context term and the two
+are different things
+
 **Transpiler**:
-An emitter that reads one kind of decorated AST node and writes C to an output stream.
+The printer that concatenates an action tree into C text. It performs lookups — following an
+expression type to its C name — but makes no decisions; every decision about the emitted C is made
+while lowering.
 _Avoid_: Generator, codegen, backend, compiler
 
 ### Errors
